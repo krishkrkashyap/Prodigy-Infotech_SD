@@ -1,0 +1,54 @@
+import requests
+from bs4 import BeautifulSoup
+import csv
+
+def scrape_eCommerce_website(url):
+    # Send a GET request to the website
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        # Parse the HTML content
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        # Extract product information based on the HTML structure of the website
+        product_info_list = []
+
+        # Replace these selectors with the actual ones from the website
+        product_elements = soup.select('.product-container')  # Example selector
+
+        for product in product_elements:
+            name = product.select_one('.product-name').text.strip()  # Example selector
+            price = product.select_one('.product-price').text.strip()  # Example selector
+            rating = product.select_one('.product-rating').text.strip()  # Example selector
+
+            product_info_list.append({'Name': name, 'Price': price, 'Rating': rating})
+
+        return product_info_list
+
+    else:
+        print(f"Failed to retrieve data. Status code: {response.status_code}")
+        return None
+
+def save_to_csv(data, filename='product_info.csv'):
+    # Save the extracted data to a CSV file
+    with open(filename, 'w', newline='') as csvfile:
+        fieldnames = ['Name', 'Price', 'Rating']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+        writer.writeheader()
+        for row in data:
+            writer.writerow(row)
+
+if __name__ == "__main__":
+    # Replace 'https://example.com' with the actual URL of the e-commerce website
+    website_url = 'http://books.toscrape.com'
+    
+    # Scrape product information
+    product_data = scrape_eCommerce_website(website_url)
+
+    if product_data:
+        # Save the extracted data to a CSV file
+        save_to_csv(product_data)
+        print("Data successfully extracted and saved to 'product_info.csv'")
+    else:
+        print("Extraction failed.")
